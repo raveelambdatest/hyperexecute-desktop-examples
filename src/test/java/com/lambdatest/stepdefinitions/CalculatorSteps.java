@@ -12,7 +12,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 public class CalculatorSteps {
-    private WindowsDriver driver;
+    private ThreadLocal<WindowsDriver> driverThreadLocal;
 
     @Before
     public void setUp() throws Exception {
@@ -23,7 +23,9 @@ public class CalculatorSteps {
 
     @Given("I have opened Windows Calculator app")
     public void openCalculator() {
-        driver.findElementByName("Standard Calculator").click();
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("app", "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App");
+        driverThreadLocal.set( new WindowsDriver(new URL("http://127.0.0.1:4723"), capabilities));
     }
 
     @When("I enter {string} and {string} and {string} and {string}")
@@ -42,8 +44,9 @@ public class CalculatorSteps {
 
     @After
     public void tearDown() {
-        if (driver != null) {
-            driver.quit();
+        if (driverThreadLocal.get() != null) {
+            driverThreadLocal.get().quit();
         }
+        driverThreadLocal.remove();
     }
 }
